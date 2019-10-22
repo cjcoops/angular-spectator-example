@@ -6,9 +6,11 @@ import {
   Spectator,
   createComponentFactory,
   byText,
-  byTestId
+  byTestId,
+  byPlaceholder,
+  byLabel
 } from '@ngneat/spectator';
-import { of, timer } from 'rxjs';
+import { timer, of } from 'rxjs';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { mapTo } from 'rxjs/operators';
 
@@ -47,10 +49,75 @@ describe('ProductsComponent', () => {
     tick(100);
     spectator.detectChanges();
 
+    expect(dataService.get).toHaveBeenCalled();
+    expect(dataService.get).toHaveBeenCalledTimes(1);
     expect(spectator.query(byTestId('loader'))).not.toExist();
     expect(spectator.query(byText('React'))).toExist();
     expect(spectator.query(byText('50$'))).toExist();
     expect(spectator.query(byText('Build user interfaces'))).toExist();
     tick();
   }));
+
+  it('should filter based on the search term', () => {
+    const dataService = spectator.get(DataService);
+
+    dataService.get.andCallFake(() =>
+      of([
+        {
+          id: 1,
+          title: 'React',
+          price: 50,
+          description: 'Build user interfaces'
+        },
+        { id: 2, title: 'VueJS', price: 45 }
+      ])
+    );
+
+    spectator.detectChanges();
+
+    expect(spectator.query(byText('React'))).toExist();
+    expect(spectator.query(byText('VueJS'))).toExist();
+
+    spectator.typeInElement(
+      'v',
+      spectator.query(byPlaceholder('Search Product..'))
+    );
+
+    expect(spectator.query(byText('React'))).not.toExist();
+    expect(spectator.query(byText('VueJS'))).toExist();
+  });
+
+  it('should sort based on the sort control', () => {
+    const mockData = [
+      { id: 1, title: 'VueJS', price: 45 },
+      {
+        id: 2,
+        title: 'React',
+        price: 50,
+        description: 'Build user interfaces'
+      }
+    ];
+
+    const dataService = spectator.get(DataService);
+
+    dataService.get.andCallFake(() => of(mockData));
+
+    spectator.detectChanges();
+
+    const renderedTitles = spectator.queryAll('.product-title');
+
+    expect(renderedTitles[0]).toHaveText('React');
+    expect(renderedTitles[1]).toHaveText('VueJS');
+
+    const select = spectator.query(
+      byLabel('Sort by')
+    ) as HTMLSelectElement;
+    spectator.selectOption(select, 'price');
+
+    const renderedTitlesAfterSelect = spectator.queryAll('.product-title');
+
+    expect(select).toHaveSelectedOptions('price');
+    expect(renderedTitlesAfterSelect[0]).toHaveText('VueJS');
+    expect(renderedTitlesAfterSelect[1]).toHaveText('React');
+  });
 });

@@ -30,9 +30,9 @@ export class ProductsComponent implements OnInit {
       this.search.valueChanges.pipe(startWith('')),
       this.sortControl.valueChanges.pipe(startWith('title'))
     ).pipe(
-      switchMap(([term, sortBy]) =>
-        this.productsQuery.getProducts(term, sortBy as keyof Product)
-      )
+      switchMap(([term, sortBy]) => {
+        return this.productsQuery.getProducts(term, sortBy as keyof Product);
+      })
     );
   }
 }

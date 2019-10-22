@@ -7,8 +7,8 @@
   <ng-container *ngIf="!(loading$ | async); else loadingTpl">
     <!--Sorting-->
     <div class="col s12">
-      <label>Sort by</label>
-      <select class="browser-default" [formControl]="sortControl">
+      <label for="select-sort-by">Sort by</label>
+      <select class="browser-default" [formControl]="sortControl" data-testid="select-sort-by" id="select-sort-by">
         <option value="title">Name</option>
         <option value="price">Price</option>
       </select>
