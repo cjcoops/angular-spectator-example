@@ -1,25 +1,32 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { DataService } from './data.service';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ProductComponent } from './product/product.component';
 import { ProductsComponent } from './products.component';
+import {
+  Spectator,
+  createComponentFactory,
+  mockProvider
+} from '@ngneat/spectator';
+import { of } from 'rxjs';
 
 describe('ProductsComponent', () => {
-  let component: ProductsComponent;
-  let fixture: ComponentFixture<ProductsComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ProductsComponent ]
-    })
-    .compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ProductsComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  let spectator: Spectator<ProductsComponent>;
+  const createComponent = createComponentFactory({
+    component: ProductsComponent,
+    declarations: [ProductComponent],
+    imports: [ReactiveFormsModule],
+    providers: [
+      mockProvider(DataService, {
+        get: () => of([])
+      })
+    ],
+    detectChanges: false
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  beforeEach(() => (spectator = createComponent()));
+
+  it('should load a list of products', () => {
+    spectator.detectChanges();
+    expect(spectator.query('.progress')).toBeTruthy();
   });
 });
