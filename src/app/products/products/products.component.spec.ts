@@ -5,9 +5,12 @@ import { ProductsComponent } from './products.component';
 import {
   Spectator,
   createComponentFactory,
-  mockProvider
+  byText,
+  byTestId
 } from '@ngneat/spectator';
-import { of } from 'rxjs';
+import { of, timer } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { mapTo } from 'rxjs/operators';
 
 describe('ProductsComponent', () => {
   let spectator: Spectator<ProductsComponent>;
@@ -15,18 +18,39 @@ describe('ProductsComponent', () => {
     component: ProductsComponent,
     declarations: [ProductComponent],
     imports: [ReactiveFormsModule],
-    providers: [
-      mockProvider(DataService, {
-        get: () => of([])
-      })
-    ],
+    mocks: [DataService],
     detectChanges: false
   });
 
   beforeEach(() => (spectator = createComponent()));
 
-  it('should load a list of products', () => {
+  it('should load a list of products', fakeAsync(() => {
+    const dataService = spectator.get(DataService);
+
+    dataService.get.andCallFake(() =>
+      timer(100).pipe(
+        mapTo([
+          {
+            id: 1,
+            title: 'React',
+            price: 50,
+            description: 'Build user interfaces'
+          },
+          { id: 2, title: 'VueJS', price: 45 }
+        ])
+      )
+    );
+
     spectator.detectChanges();
-    expect(spectator.query('.progress')).toBeTruthy();
-  });
+    expect(spectator.query(byTestId('loader'))).toExist();
+
+    tick(100);
+    spectator.detectChanges();
+
+    expect(spectator.query(byTestId('loader'))).not.toExist();
+    expect(spectator.query(byText('React'))).toExist();
+    expect(spectator.query(byText('50$'))).toExist();
+    expect(spectator.query(byText('Build user interfaces'))).toExist();
+    tick();
+  }));
 });
