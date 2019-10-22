@@ -32,13 +32,13 @@ describe('ProductsComponent', () => {
     dataService.get.andCallFake(() =>
       timer(100).pipe(
         mapTo([
+          { id: 1, title: 'VueJS', price: 45 },
           {
-            id: 1,
+            id: 2,
             title: 'React',
             price: 50,
             description: 'Build user interfaces'
-          },
-          { id: 2, title: 'VueJS', price: 45 }
+          }
         ])
       )
     );
@@ -58,18 +58,18 @@ describe('ProductsComponent', () => {
     tick();
   }));
 
-  it('should filter based on the search term', () => {
+  it('should filter the products based on the search term', () => {
     const dataService = spectator.get(DataService);
 
     dataService.get.andCallFake(() =>
       of([
+        { id: 1, title: 'VueJS', price: 45 },
         {
-          id: 1,
+          id: 2,
           title: 'React',
           price: 50,
           description: 'Build user interfaces'
-        },
-        { id: 2, title: 'VueJS', price: 45 }
+        }
       ])
     );
 
@@ -87,7 +87,7 @@ describe('ProductsComponent', () => {
     expect(spectator.query(byText('VueJS'))).toExist();
   });
 
-  it('should sort based on the sort control', () => {
+  it('should sort the products based on the sort control', () => {
     const mockData = [
       { id: 1, title: 'VueJS', price: 45 },
       {
@@ -109,9 +109,7 @@ describe('ProductsComponent', () => {
     expect(renderedTitles[0]).toHaveText('React');
     expect(renderedTitles[1]).toHaveText('VueJS');
 
-    const select = spectator.query(
-      byLabel('Sort by')
-    ) as HTMLSelectElement;
+    const select = spectator.query(byLabel('Sort by')) as HTMLSelectElement;
     spectator.selectOption(select, 'price');
 
     const renderedTitlesAfterSelect = spectator.queryAll('.product-title');
@@ -121,3 +119,37 @@ describe('ProductsComponent', () => {
     expect(renderedTitlesAfterSelect[1]).toHaveText('React');
   });
 });
+
+// const setup = () => {
+//   spectator = createComponent();
+
+//   const dataService = spectator.get<DataService>(DataService);
+
+//   const {
+//     detectChanges,
+//     query,
+//     typeInElement,
+//     selectOption,
+//     queryAll
+//   } = spectator;
+
+//   const mockProducts = [
+//     { id: 1, title: 'VueJS', price: 45 },
+//     {
+//       id: 2,
+//       title: 'React',
+//       price: 50,
+//       description: 'Build user interfaces'
+//     }
+//   ];
+
+//   return {
+//     detectChanges,
+//     query,
+//     queryAll,
+//     typeInElement,
+//     dataService,
+//     selectOption,
+//     mockProducts
+//   };
+// };
