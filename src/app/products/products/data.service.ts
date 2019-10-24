@@ -7,8 +7,6 @@ import { products } from '../products.mocks';
   providedIn: 'root'
 })
 export class DataService {
-  constructor() {}
-
   get() {
     return timer(500).pipe(mapTo(products));
   }

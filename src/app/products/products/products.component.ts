@@ -23,9 +23,14 @@ export class ProductsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // make http request to get a list of products
     this.productsService.get().subscribe();
+
+    // observable of the loading state
     this.loading$ = this.productsQuery.selectLoading();
 
+    // observable of the products list
+    // filtered by the search term and sorted by the sort control
     this.products$ = combineLatest(
       this.search.valueChanges.pipe(startWith('')),
       this.sortControl.valueChanges.pipe(startWith('title'))
