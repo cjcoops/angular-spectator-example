@@ -1,15 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ProductsService } from '../state/products.service';
+import { ProductsService } from '../products.service';
 import { Observable, combineLatest } from 'rxjs';
-import { Product } from '../state/products.model';
+import { Product } from '../products.model';
 import { FormControl } from '@angular/forms';
-import { ProductsQuery } from '../state/products.query';
 import { switchMap, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-products',
-  templateUrl: './products.component.html',
-  styleUrls: ['./products.component.css']
+  templateUrl: './products.component.html'
 })
 export class ProductsComponent implements OnInit {
   products$: Observable<Product[]>;
@@ -17,17 +15,14 @@ export class ProductsComponent implements OnInit {
   search = new FormControl();
   sortControl = new FormControl('title');
 
-  constructor(
-    private productsService: ProductsService,
-    private productsQuery: ProductsQuery
-  ) {}
+  constructor(private productsService: ProductsService) {}
 
   ngOnInit() {
     // make http request to get a list of products
-    this.productsService.get().subscribe();
+    this.productsService.load().subscribe();
 
     // observable of the loading state
-    this.loading$ = this.productsQuery.selectLoading();
+    this.loading$ = this.productsService.loading$;
 
     // observable of the products list
     // filtered by the search term and sorted by the sort control
@@ -36,7 +31,7 @@ export class ProductsComponent implements OnInit {
       this.sortControl.valueChanges.pipe(startWith('title'))
     ).pipe(
       switchMap(([term, sortBy]) => {
-        return this.productsQuery.getProducts(term, sortBy as keyof Product);
+        return this.productsService.getProducts(term, sortBy);
       })
     );
   }
